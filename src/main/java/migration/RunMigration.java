@@ -27,7 +27,7 @@ public class RunMigration {
 
         for (File file : files) {
             try {
-                System.out.println("---------------------------------------------------------------------------------");
+                System.out.println("---------------------------------------------");
                 runConverter(file);
             }catch (Exception e){
                 System.err.println("ERR -> Ocorreu um erro inesperado: " + e.getMessage());
@@ -37,7 +37,7 @@ public class RunMigration {
         System.out.println("LOG -> Convesão concluidao com sucesso!");
     }
 
-    private static void runConverter(File file) throws Exception{
+    private static void runConverter(File file) {
 
         System.out.println("LOG -> Iniciando conversao de: " + file.getAbsolutePath());
         List<Map<String, Object>> data;
@@ -45,6 +45,7 @@ public class RunMigration {
         try {
             System.out.println("LOG -> Lendo conteudo do arquivo..");
             String json = Files.readString(file.toPath());
+            json = convertToList(json);
             ObjectMapper mapper = new ObjectMapper();
             data = mapper.readValue(json, new TypeReference<>() {});
             System.out.println("LOG -> Arquivo lido com sucesso!");
@@ -93,7 +94,7 @@ public class RunMigration {
         }
     }
 
-    private static void convertValue(Row row, Object value, int position){
+    private static void convertValue(Row row, Object value, int position) {
 
         if (value instanceof String){
             row.createCell(position).setCellValue((String) value);
@@ -110,7 +111,7 @@ public class RunMigration {
         }
     }
 
-    private static void convertHeader(List<Map<String, Object>> data, Map<String, Integer> mapPosition){
+    private static void convertHeader(List<Map<String, Object>> data, Map<String, Integer> mapPosition) {
 
         int count = 0;
         for (Map<String, Object> line : data) {
@@ -122,7 +123,7 @@ public class RunMigration {
         }
     }
 
-    public static void listf(String directoryName, List<File> files) {
+    private static void listf(String directoryName, List<File> files) {
 
         File directory = new File(directoryName);
         File[] fList = directory.listFiles();
@@ -139,4 +140,16 @@ public class RunMigration {
             }
         }
     }
+
+    private static String convertToList(String content) {
+
+        if (content.startsWith("[")){
+            return content;
+        }
+
+        String separator = System.getProperty("line.separator");
+        content = "[" + content.replaceAll(separator, ", " + separator);
+        return content.substring(0, content.length() -3) + "]";
+    }
+
 }
